@@ -1,6 +1,6 @@
-﻿// Criar arquivo: Middlewares/ExceptionMiddleware.cs
-using System.Net;
-using System.Text.Json;
+﻿using System.Net;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FiapCloudGames.API.Middlewares;
 
@@ -8,11 +8,13 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IWebHostEnvironment _environment;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IWebHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -23,23 +25,24 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro não tratado: {Message}", ex.Message);
+            _logger.LogError(ex, "Unhandled exception occurred while processing request.");
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-        var response = new
+        var problem = new ProblemDetails
         {
-            error = "Ocorreu um erro interno no servidor.",
-            details = exception.Message,
-            statusCode = context.Response.StatusCode
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Erro interno do servidor",
+            Detail = _environment.IsDevelopment() ? exception.Message : "Ocorreu um erro interno no servidor.",
+            Instance = context.Request.Path
         };
 
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        context.Response.ContentType = "application/problem+json";
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        return context.Response.WriteAsJsonAsync(problem);
     }
 }

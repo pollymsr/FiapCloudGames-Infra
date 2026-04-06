@@ -17,5 +17,13 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<UserGame>()
             .HasKey(ug => new { ug.UserId, ug.GameId });
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasDefaultValue("User");
     }
 }

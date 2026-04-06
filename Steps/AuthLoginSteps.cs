@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using FiapCloudGames.API.Controllers;
 using FiapCloudGames.Infrastructure.Data;
 using FiapCloudGames.Application.DTOs;
+using FiapCloudGames.Application.Services;
+using FiapCloudGames.Infrastructure.Repositories;
+using FiapCloudGames.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -27,7 +29,7 @@ public class AuthLoginSteps
     {
         _scenarioContext = scenarioContext;
 
-        // Configurar banco em memória
+        // Configurar banco em memï¿½ria
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=:memory:")
             .Options;
@@ -47,28 +49,33 @@ public class AuthLoginSteps
             .Build();
 
         _config = configuration;
-        _controller = new AuthController(_context, _config);
+
+        // Configurar services com dependency injection
+        var userRepository = new UserRepository(_context);
+        var userDomainService = new UserDomainService();
+        var userService = new UserService(userRepository, userDomainService, _config);
+        _controller = new AuthController(userService);
     }
 
-    [Given(@"que o sistema está rodando")]
+    [Given(@"que o sistema estï¿½ rodando")]
     public void GivenQueOSistemaEstaRodando()
     {
         Assert.NotNull(_context);
         Assert.NotNull(_controller);
     }
 
-    [Given(@"o banco de dados está configurado")]
+    [Given(@"o banco de dados estï¿½ configurado")]
     public void GivenOBancoDeDadosEstaConfigurado()
     {
         Assert.True(_context.Database.CanConnect());
     }
 
-    [Given(@"que existe um usuário cadastrado com email ""(.*)"" e senha ""(.*)""")]
+    [Given(@"que existe um usuï¿½rio cadastrado com email ""(.*)"" e senha ""(.*)""")]
     public async Task GivenQueExisteUmUsuarioCadastrado(string email, string password)
     {
         var registerDto = new RegisterDto
         {
-            Name = "Usuário Teste",
+            Name = "Usuï¿½rio Teste",
             Email = email,
             Password = password
         };
@@ -76,14 +83,14 @@ public class AuthLoginSteps
         await _controller.Register(registerDto);
     }
 
-    [Given(@"que não existe um usuário com email ""(.*)""")]
+    [Given(@"que nÃ£o existe um usuÃ¡rio com email ""(.*)""")]
     public void GivenQueNaoExisteUmUsuarioComEmail(string email)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        var user = _context.Users.FirstOrDefault(u => u.Email == email.ToLowerInvariant());
         Assert.Null(user);
     }
 
-    [When(@"eu faço login com email ""(.*)"" e senha ""(.*)""")]
+    [When(@"eu faï¿½o login com email ""(.*)"" e senha ""(.*)""")]
     public async Task WhenEuFacoLogin(string email, string password)
     {
         var loginDto = new LoginDto
@@ -106,7 +113,7 @@ public class AuthLoginSteps
         }
     }
 
-    [When(@"eu registro um novo usuário com nome ""(.*)"", email ""(.*)"" e senha ""(.*)""")]
+    [When(@"eu registro um novo usuÃ¡rio com nome ""(.*)"", email ""(.*)"" e senha ""(.*)""")]
     public async Task WhenEuRegistroUmNovoUsuario(string name, string email, string password)
     {
         var registerDto = new RegisterDto
@@ -118,20 +125,20 @@ public class AuthLoginSteps
 
         _result = await _controller.Register(registerDto);
 
-        if (_result is OkObjectResult)
-            _statusCode = 200;
+        if (_result is CreatedAtActionResult)
+            _statusCode = 201;
         else if (_result is BadRequestObjectResult)
             _statusCode = 400;
     }
 
-    [Then(@"eu recebo um token JWT válido")]
+    [Then(@"eu recebo um token JWT vÃ¡lido")]
     public void ThenEuReceboUmTokenJWTValido()
     {
         Assert.NotNull(_token);
         Assert.NotEmpty(_token);
     }
 
-    [Then(@"o token contém o papel ""(.*)""")]
+    [Then(@"o token contÃ©m o papel ""(.*)""")]
     public void ThenOTokenContemOPapel(string role)
     {
         var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
@@ -155,16 +162,25 @@ public class AuthLoginSteps
         }
     }
 
-    [Then(@"o status code é (.*)")]
-    public void ThenOStatusCodeE(int statusCode)
+    [Then(@"o status code ï¿½ (.*)")]
+    public void ThenOStatusCodeE(string statusCodeStr)
     {
-        Assert.Equal(statusCode, _statusCode);
+        int expectedStatusCode = statusCodeStr switch
+        {
+            "200 OK" => 200,
+            "201 Created" => 201,
+            "400 Bad Request" => 400,
+            "401 Unauthorized" => 401,
+            _ => 500
+        };
+
+        Assert.Equal(expectedStatusCode, _statusCode);
     }
 
-    [Then(@"o usuário é criado com sucesso")]
+    [Then(@"o usuÃ¡rio Ã© criado com sucesso")]
     public void ThenOUsuarioECriadoComSucesso()
     {
-        Assert.IsType<OkObjectResult>(_result);
+        Assert.IsType<CreatedAtActionResult>(_result);
     }
 
     [Then(@"recebo uma mensagem de erro ""(.*)""")]

@@ -1,4 +1,6 @@
-﻿namespace FiapCloudGames.API.Middlewares;
+﻿using System.Diagnostics;
+
+namespace FiapCloudGames.API.Middlewares;
 
 public class LoggingMiddleware
 {
@@ -13,12 +15,13 @@ public class LoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        _logger.LogInformation("Requisição: {Method} {Path}", context.Request.Method, context.Request.Path);
+        var method = context.Request.Method;
+        var path = context.Request.Path;
+        var start = Stopwatch.GetTimestamp();
 
-        var start = DateTime.UtcNow;
         await _next(context);
-        var duration = DateTime.UtcNow - start;
 
-        _logger.LogInformation("Resposta: {StatusCode} em {Duration}ms", context.Response.StatusCode, duration.TotalMilliseconds);
+        var elapsed = (Stopwatch.GetTimestamp() - start) * 1000 / (double)Stopwatch.Frequency;
+        _logger.LogInformation("HTTP {Method} {Path} responded {StatusCode} in {Duration}ms", method, path, context.Response.StatusCode, elapsed);
     }
 }

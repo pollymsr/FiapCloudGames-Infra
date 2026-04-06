@@ -1,14 +1,14 @@
-using Xunit;
+﻿using Xunit;
 using Microsoft.EntityFrameworkCore;
 using FiapCloudGames.Domain.Entities;
 using FiapCloudGames.Infrastructure.Data;
-using FiapCloudGames.API.Controllers;
+using FiapCloudGames.Infrastructure.Repositories;
+using FiapCloudGames.Domain.Services;
+using FiapCloudGames.Application.Services;
 using FiapCloudGames.Application.DTOs;
+using FiapCloudGames.API.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FiapCloudGames.Tests.Controllers;
 
@@ -28,7 +28,7 @@ public class AuthControllerTests
 
     private IConfiguration GetConfiguration()
     {
-        var config = new ConfigurationBuilder()
+        return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 {"Jwt:Key", "minha_chave_super_secreta_para_testes_12345"},
@@ -36,17 +36,19 @@ public class AuthControllerTests
                 {"Jwt:Audience", "FiapCloudGamesUsers"}
             })
             .Build();
-        return config;
+    }
+
+    private IUserService GetUserService(AppDbContext context)
+    {
+        return new UserService(new UserRepository(context), new UserDomainService(), GetConfiguration());
     }
 
     [Fact]
-    public async Task Register_WithValidData_ReturnsOk()
+    public async Task Register_WithValidData_ReturnsCreated()
     {
-        // Arrange
         var context = GetDbContext();
-        var config = GetConfiguration();
-        var controller = new AuthController(context, config);
-        
+        var controller = new AuthController(GetUserService(context));
+
         var registerDto = new RegisterDto
         {
             Name = "Test User",
@@ -54,21 +56,16 @@ public class AuthControllerTests
             Password = "Test@123"
         };
 
-        // Act
         var result = await controller.Register(registerDto);
 
-        // Assert
-        Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<CreatedAtActionResult>(result);
     }
 
     [Fact]
     public async Task Register_WithExistingEmail_ReturnsBadRequest()
     {
-        // Arrange
         var context = GetDbContext();
-        var config = GetConfiguration();
-        
-        var existingUser = new User
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Name = "Existing",
@@ -76,11 +73,10 @@ public class AuthControllerTests
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Test@123"),
             Role = "User"
         };
-        context.Users.Add(existingUser);
+        context.Users.Add(user);
         await context.SaveChangesAsync();
-        
-        var controller = new AuthController(context, config);
-        
+
+        var controller = new AuthController(GetUserService(context));
         var registerDto = new RegisterDto
         {
             Name = "New User",
@@ -88,20 +84,18 @@ public class AuthControllerTests
             Password = "Test@123"
         };
 
-        // Act
         var result = await controller.Register(registerDto);
 
-        // Assert
         Assert.IsType<BadRequestObjectResult>(result);
     }
 
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsToken()
     {
-        // Arrange
         var context = GetDbContext();
         var config = GetConfiguration();
-        
+        var userService = new UserService(new UserRepository(context), new UserDomainService(), config);
+
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -112,19 +106,16 @@ public class AuthControllerTests
         };
         context.Users.Add(user);
         await context.SaveChangesAsync();
-        
-        var controller = new AuthController(context, config);
-        
+
+        var controller = new AuthController(userService);
         var loginDto = new LoginDto
         {
             Email = "login@email.com",
             Password = "Test@123"
         };
 
-        // Act
         var result = await controller.Login(loginDto);
 
-        // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.NotNull(okResult.Value);
     }
@@ -132,10 +123,9 @@ public class AuthControllerTests
     [Fact]
     public async Task Login_WithInvalidPassword_ReturnsUnauthorized()
     {
-        // Arrange
         var context = GetDbContext();
-        var config = GetConfiguration();
-        
+        var userService = new UserService(new UserRepository(context), new UserDomainService(), GetConfiguration());
+
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -146,19 +136,16 @@ public class AuthControllerTests
         };
         context.Users.Add(user);
         await context.SaveChangesAsync();
-        
-        var controller = new AuthController(context, config);
-        
+
+        var controller = new AuthController(userService);
         var loginDto = new LoginDto
         {
             Email = "login2@email.com",
             Password = "WrongPassword"
         };
 
-        // Act
         var result = await controller.Login(loginDto);
 
-        // Assert
         Assert.IsType<UnauthorizedObjectResult>(result);
     }
 }

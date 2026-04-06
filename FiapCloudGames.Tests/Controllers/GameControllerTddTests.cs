@@ -1,26 +1,22 @@
-﻿// Controllers/GameControllerTddTests.cs
-using Xunit;
-using Moq;
+﻿using Xunit;
 using Microsoft.EntityFrameworkCore;
 using FiapCloudGames.Domain.Entities;
 using FiapCloudGames.Infrastructure.Data;
-using System.Security.Claims;
+using FiapCloudGames.Infrastructure.Repositories;
+using FiapCloudGames.Domain.Services;
+using FiapCloudGames.Application.Services;
+using FiapCloudGames.API.Controllers;
+using FiapCloudGames.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using FiapCloudGames.API.Controllers;
+using System.Security.Claims;
 
 namespace FiapCloudGames.Tests.Controllers;
 
 public class GameControllerTddTests
 {
-    // TDD: Primeiro escrevemos o teste, depois implementamos
-    [Fact]
-    public async Task BuyGame_UserDoesNotOwnGame_ShouldAddToLibrary()
+    private AppDbContext GetDbContext()
     {
-        // ARRANGE - Preparar os dados
-        var userId = Guid.NewGuid();
-        var gameId = Guid.NewGuid();
-
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=:memory:")
             .Options;
@@ -28,17 +24,31 @@ public class GameControllerTddTests
         var context = new AppDbContext(options);
         context.Database.OpenConnection();
         context.Database.EnsureCreated();
+        return context;
+    }
 
-        // Adicionar usuário e jogo
+    private GameController GetGameController(AppDbContext context)
+    {
+        var gameService = new GameService(new GameRepository(context), new UserRepository(context), new GameDomainService());
+        return new GameController(gameService);
+    }
+
+    [Fact]
+    public async Task BuyGame_UserDoesNotOwnGame_ShouldAddToLibrary()
+    {
+        var userId = Guid.NewGuid();
+        var gameId = Guid.NewGuid();
+
+        var context = GetDbContext();
+
         var user = new User { Id = userId, Email = "test@email.com", Name = "Test", PasswordHash = "hash", Role = "User" };
-        var game = new Game { Id = gameId, Title = "Test Game", Price = 100, Description = "Test", Genre = "Action", ReleaseDate = DateTime.Now };
+        var game = new Game { Id = gameId, Title = "Test Game", Price = 100, Description = "Test", Genre = "Action", ReleaseDate = DateTime.UtcNow };
         context.Users.Add(user);
         context.Games.Add(game);
         await context.SaveChangesAsync();
 
-        // Mock do usuário logado
-        var controller = new GameController(context);
-        var claims = new List<Claim> { new Claim(ClaimTypes.Name, "test@email.com") };
+        var controller = GetGameController(context);
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
         var identity = new ClaimsIdentity(claims);
         var principal = new ClaimsPrincipal(identity);
         controller.ControllerContext = new ControllerContext
@@ -46,13 +56,9 @@ public class GameControllerTddTests
             HttpContext = new DefaultHttpContext { User = principal }
         };
 
-        // ACT - Executar a ação
-        var result = await controller.BuyGame(gameId);
+        var result = await controller.Purchase(gameId);
 
-        // ASSERT - Verificar o resultado
         var okResult = Assert.IsType<OkObjectResult>(result);
-
-        // Verificar se o jogo foi adicionado ao UserGames
         var userGame = await context.UserGames.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.GameId == gameId);
         Assert.NotNull(userGame);
     }
@@ -60,29 +66,20 @@ public class GameControllerTddTests
     [Fact]
     public async Task BuyGame_UserAlreadyOwnsGame_ShouldReturnBadRequest()
     {
-        // ARRANGE
         var userId = Guid.NewGuid();
         var gameId = Guid.NewGuid();
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite("DataSource=:memory:")
-            .Options;
-
-        var context = new AppDbContext(options);
-        context.Database.OpenConnection();
-        context.Database.EnsureCreated();
+        var context = GetDbContext();
 
         var user = new User { Id = userId, Email = "test@email.com", Name = "Test", PasswordHash = "hash", Role = "User" };
-        var game = new Game { Id = gameId, Title = "Test Game", Price = 100, Description = "Test", Genre = "Action", ReleaseDate = DateTime.Now };
+        var game = new Game { Id = gameId, Title = "Test Game", Price = 100, Description = "Test", Genre = "Action", ReleaseDate = DateTime.UtcNow };
         context.Users.Add(user);
         context.Games.Add(game);
-
-        // Usuário já possui o jogo
-        context.UserGames.Add(new UserGame { UserId = userId, GameId = gameId, PurchaseDate = DateTime.Now });
+        context.UserGames.Add(new UserGame { UserId = userId, GameId = gameId, PurchaseDate = DateTime.UtcNow });
         await context.SaveChangesAsync();
 
-        var controller = new GameController(context);
-        var claims = new List<Claim> { new Claim(ClaimTypes.Name, "test@email.com") };
+        var controller = GetGameController(context);
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
         var identity = new ClaimsIdentity(claims);
         var principal = new ClaimsPrincipal(identity);
         controller.ControllerContext = new ControllerContext
@@ -90,10 +87,8 @@ public class GameControllerTddTests
             HttpContext = new DefaultHttpContext { User = principal }
         };
 
-        // ACT
-        var result = await controller.BuyGame(gameId);
+        var result = await controller.Purchase(gameId);
 
-        // ASSERT
         Assert.IsType<BadRequestObjectResult>(result);
     }
 }

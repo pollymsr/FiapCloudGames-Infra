@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using FiapCloudGames.Domain.Entities;
-using FiapCloudGames.Infrastructure.Data;
 using FiapCloudGames.Application.DTOs;
+using FiapCloudGames.Application.Services;
 using System.Security.Claims;
 
 namespace FiapCloudGames.API.Controllers;
@@ -13,144 +11,93 @@ namespace FiapCloudGames.API.Controllers;
 [Authorize]
 public class GameController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IGameService _gameService;
 
-    public GameController(AppDbContext context)
+    public GameController(IGameService gameService)
     {
-        _context = context;
+        _gameService = gameService;
     }
 
-    [HttpGet("list")]
-    [EndpointName("ListAllGames")]
+    [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var games = await _context.Games.ToListAsync();
+        var games = await _gameService.GetAllAsync();
         return Ok(games);
     }
 
-    [HttpGet("get/{id}")]
-    [EndpointName("GetGameById")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var game = await _context.Games.FindAsync(id);
+        var game = await _gameService.GetByIdAsync(id);
         if (game == null)
-            return NotFound("Game not found");
+            return NotFound("Jogo não encontrado");
 
         return Ok(game);
     }
 
-    [HttpPost("create")]
-    [EndpointName("CreateGame")]
+    [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateGameDto dto)
     {
-        var game = new Game
-        {
-            Id = Guid.NewGuid(),
-            Title = dto.Title,
-            Description = dto.Description,
-            Price = dto.Price,
-            Genre = dto.Genre,
-            ReleaseDate = dto.ReleaseDate
-        };
-
-        _context.Games.Add(game);
-        await _context.SaveChangesAsync();
-
-        return Ok(game);
+        var game = await _gameService.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = game.Id }, game);
     }
 
-    [HttpPut("update/{id}")]
-    [EndpointName("UpdateGame")]
+    [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateGameDto dto)
     {
-        var game = await _context.Games.FindAsync(id);
+        var game = await _gameService.UpdateAsync(id, dto);
         if (game == null)
-            return NotFound("Game not found");
+            return NotFound("Jogo não encontrado");
 
-        game.Title = dto.Title;
-        game.Description = dto.Description;
-        game.Price = dto.Price;
-        game.Genre = dto.Genre;
-        game.ReleaseDate = dto.ReleaseDate;
-
-        await _context.SaveChangesAsync();
         return Ok(game);
     }
 
-    [HttpDelete("delete/{id}")]
-    [EndpointName("DeleteGame")]
+    [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var game = await _context.Games.FindAsync(id);
-        if (game == null)
-            return NotFound("Game not found");
+        if (!await _gameService.DeleteAsync(id))
+            return NotFound("Jogo não encontrado");
 
-        _context.Games.Remove(game);
-        await _context.SaveChangesAsync();
-        return Ok("Game removed successfully");
+        return NoContent();
     }
 
-    [HttpPost("buy/{gameId}")]
-    [EndpointName("BuyGame")]
-    public async Task<IActionResult> BuyGame(Guid gameId)
+    [HttpPost("{id}/purchase")]
+    public async Task<IActionResult> Purchase(Guid id)
     {
-        var userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized("Usuário inválido");
 
-        if (user == null)
-            return Unauthorized("User not found");
-
-        var game = await _context.Games.FindAsync(gameId);
-        if (game == null)
-            return NotFound("Game not found");
-
-        var alreadyOwned = await _context.UserGames
-            .AnyAsync(ug => ug.UserId == user.Id && ug.GameId == gameId);
-
-        if (alreadyOwned)
-            return BadRequest("User already owns this game");
-
-        var userGame = new UserGame
+        try
         {
-            UserId = user.Id,
-            GameId = gameId,
-            PurchaseDate = DateTime.Now
-        };
+            var game = await _gameService.PurchaseAsync(userId, id);
+            if (game == null)
+                return NotFound("Jogo não encontrado");
 
-        _context.UserGames.Add(userGame);
-        await _context.SaveChangesAsync();
-
-        // Retornar apenas as informações necessárias (sem loops)
-        return Ok(new
+            return Ok(new
+            {
+                message = $"Jogo '{game.Title}' comprado com sucesso!",
+                game.Id,
+                game.Title,
+                game.Price,
+                purchaseDate = DateTime.UtcNow
+            });
+        }
+        catch (InvalidOperationException ex)
         {
-            message = $"Game '{game.Title}' purchased successfully!",
-            gameId = game.Id,
-            gameTitle = game.Title,
-            price = game.Price,
-            purchaseDate = DateTime.Now
-        });
+            return BadRequest(ex.Message);
+        }
     }
 
-
-    [HttpGet("my-games")]
-    [EndpointName("MyGames")]
-    public async Task<IActionResult> GetMyGames()
+    [HttpGet("library")]
+    public async Task<IActionResult> GetLibrary()
     {
-        var userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized("Usuário inválido");
 
-        if (user == null)
-            return Unauthorized();
-
-        var myGames = await _context.UserGames
-            .Where(ug => ug.UserId == user.Id)
-            .Include(ug => ug.Game)
-            .Select(ug => ug.Game)
-            .ToListAsync();
-
-        return Ok(myGames);
+        var games = await _gameService.GetLibraryAsync(userId);
+        return Ok(games);
     }
 }
