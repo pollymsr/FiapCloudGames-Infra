@@ -18,15 +18,17 @@ public class GameController : ControllerBase
         _gameService = gameService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpGet("list")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListAllGames()
     {
         var games = await _gameService.GetAllAsync();
         return Ok(games);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    [AllowAnonymous]
+    public async Task<IActionResult> GetGameById(Guid id)
     {
         var game = await _gameService.GetByIdAsync(id);
         if (game == null)
@@ -35,17 +37,17 @@ public class GameController : ControllerBase
         return Ok(game);
     }
 
-    [HttpPost]
+    [HttpPost("create")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create([FromBody] CreateGameDto dto)
+    public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
         var game = await _gameService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = game.Id }, game);
+        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game);
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateGameDto dto)
+    public async Task<IActionResult> UpdateGameById(Guid id, [FromBody] UpdateGameDto dto)
     {
         var game = await _gameService.UpdateAsync(id, dto);
         if (game == null)
@@ -56,7 +58,7 @@ public class GameController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> DeleteGameById(Guid id)
     {
         if (!await _gameService.DeleteAsync(id))
             return NotFound("Jogo não encontrado");
@@ -65,14 +67,14 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("{id}/purchase")]
-    public async Task<IActionResult> Purchase(Guid id)
+    public async Task<IActionResult> BuyGame(Guid id, [FromQuery] string? promotionCode = null)
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized("Usuário inválido");
 
         try
         {
-            var game = await _gameService.PurchaseAsync(userId, id);
+            var game = await _gameService.PurchaseAsync(userId, id, promotionCode);
             if (game == null)
                 return NotFound("Jogo não encontrado");
 
@@ -82,7 +84,8 @@ public class GameController : ControllerBase
                 game.Id,
                 game.Title,
                 game.Price,
-                purchaseDate = DateTime.UtcNow
+                purchaseDate = DateTime.UtcNow,
+                promotionApplied = !string.IsNullOrWhiteSpace(promotionCode)
             });
         }
         catch (InvalidOperationException ex)
@@ -92,7 +95,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("library")]
-    public async Task<IActionResult> GetLibrary()
+    public async Task<IActionResult> GetMyLibrary()
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized("Usuário inválido");

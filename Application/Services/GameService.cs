@@ -10,15 +10,18 @@ public class GameService : IGameService
     private readonly IGameRepository _gameRepository;
     private readonly IUserRepository _userRepository;
     private readonly IGameDomainService _gameDomainService;
+    private readonly IPromotionService _promotionService;
 
     public GameService(
         IGameRepository gameRepository,
         IUserRepository userRepository,
-        IGameDomainService gameDomainService)
+        IGameDomainService gameDomainService,
+        IPromotionService promotionService)
     {
         _gameRepository = gameRepository;
         _userRepository = userRepository;
         _gameDomainService = gameDomainService;
+        _promotionService = promotionService;
     }
 
     public async Task<Game> CreateAsync(CreateGameDto dto)
@@ -64,7 +67,7 @@ public class GameService : IGameService
         return await _gameRepository.GetGamesForUserAsync(userId);
     }
 
-    public async Task<Game?> PurchaseAsync(Guid userId, Guid gameId)
+    public async Task<Game?> PurchaseAsync(Guid userId, Guid gameId, string? promotionCode = null)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -84,6 +87,40 @@ public class GameService : IGameService
             GameId = gameId,
             PurchaseDate = DateTime.UtcNow
         };
+
+        // Aplicar promoção se código fornecido
+        if (!string.IsNullOrWhiteSpace(promotionCode))
+        {
+            var promotion = await _promotionService.GetByCodeAsync(promotionCode);
+            if (promotion != null)
+            {
+                if (!promotion.IsActive)
+                    throw new InvalidOperationException("Esta promoção não está ativa.");
+
+                var now = DateTime.UtcNow;
+                if (now < promotion.StartDate || now > promotion.EndDate)
+                    throw new InvalidOperationException("Esta promoção não está no período válido.");
+
+                if (promotion.CurrentUses >= promotion.MaxUses)
+                    throw new InvalidOperationException("Esta promoção atingiu o limite de usos.");
+
+                // Atualizar uso da promoção
+                promotion.CurrentUses++;
+                await _promotionService.UpdateAsync(promotion.Id, new UpdatePromotionDto
+                {
+                    Description = promotion.Description,
+                    DiscountPercentage = promotion.DiscountPercentage,
+                    StartDate = promotion.StartDate,
+                    EndDate = promotion.EndDate,
+                    IsActive = promotion.IsActive,
+                    MaxUses = promotion.MaxUses
+                });
+            }
+            else
+            {
+                throw new InvalidOperationException("Código de promoção inválido.");
+            }
+        }
 
         await _gameRepository.AddUserGameAsync(userGame);
         await _gameRepository.SaveChangesAsync();

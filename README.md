@@ -112,33 +112,53 @@ Após a primeira execução, um usuário administrador é criado automaticamente
 
 ## 📚 API Endpoints
 
-### Autenticação
+### Authentication
 ```
-POST /api/auth/register  - Registrar novo usuário
-POST /api/auth/login     - Fazer login (retorna JWT)
-```
-
-### Jogos
-```
-GET    /api/games           - Listar jogos disponíveis (público)
-GET    /api/games/{id}      - Detalhes de um jogo (público)
-POST   /api/games           - Criar jogo (Admin)
-PUT    /api/games/{id}      - Atualizar jogo (Admin)
-DELETE /api/games/{id}      - Remover jogo (Admin)
-POST   /api/games/{id}/purchase - Comprar jogo (User)
+POST /api/auth/register  - Register new user
+POST /api/auth/login     - User login (returns JWT token)
 ```
 
-### Usuários (Admin)
+### Games - Public (AllowAnonymous)
 ```
-GET    /api/users           - Listar todos os usuários (Admin)
-GET    /api/users/{id}      - Detalhes de usuário (Admin)
-PATCH  /api/users/{id}/role - Alterar role do usuário (Admin)
-DELETE /api/users/{id}      - Remover usuário (Admin)
+GET /api/games/list      - List all available games
+GET /api/games/{id}      - Get game details by ID
 ```
 
-### Minha Biblioteca
+### Games - User (Authenticated)
 ```
-GET    /api/games/library   - Ver minha biblioteca (User)
+POST /api/games/{id}/purchase?promotionCode=CODE - Buy game (optional promotion code)
+GET  /api/games/library                           - Get my purchased games library
+```
+
+### Games - Admin Only
+```
+POST   /api/games/create        - Create new game
+PUT    /api/games/{id}          - Update game by ID
+DELETE /api/games/{id}          - Delete game by ID
+```
+
+### User Profile - Authenticated User
+```
+GET   /api/users/me             - Get my profile information
+PATCH /api/users/me             - Update my profile (name, email, password)
+```
+
+### Users Management - Admin Only
+```
+GET    /api/users/list          - List all users
+GET    /api/users/{id}          - Get user details by ID
+PUT    /api/users/{id}          - Update user by ID
+PATCH  /api/users/{id}/role     - Change user role (User ↔ Admin)
+DELETE /api/users/{id}          - Delete user by ID
+```
+
+### Promotions - Admin Only
+```
+GET    /api/promotions/list     - List all promotions
+GET    /api/promotions/{id}     - Get promotion details by ID
+POST   /api/promotions/create   - Create new promotion
+PUT    /api/promotions/{id}     - Update promotion by ID
+DELETE /api/promotions/{id}     - Delete promotion by ID
 ```
 
 ## 🧪 Executar Testes
@@ -214,12 +234,27 @@ Acesse: http://localhost:5169/swagger
 
 📝 Endpoints Principais
 Método	Endpoint	Descrição	Role
-POST	/auth/register	Cadastrar usuário	-
-POST	/auth/login	Fazer login	-
-GET	/api/games/list	Listar jogos	User
-POST	/api/games/create	Criar jogo	Admin
-POST	/api/games/buy/{id}	Comprar jogo	User
-GET	/api/games/my-games	Minha biblioteca	User
+POST	/api/auth/register	Register new user	-
+POST	/api/auth/login	User login	-
+GET	/api/games/list	List all games	Public
+GET	/api/games/{id}	Get game details	Public
+POST	/api/games/create	Create game	Admin
+PUT	/api/games/{id}	Update game	Admin
+DELETE	/api/games/{id}	Delete game	Admin
+POST	/api/games/{id}/purchase	Buy game	User
+GET	/api/games/library	Get my library	User
+GET	/api/users/me	Get my profile	User
+PATCH	/api/users/me	Update my profile	User
+GET	/api/users/list	List all users	Admin
+GET	/api/users/{id}	Get user details	Admin
+PUT	/api/users/{id}	Update user	Admin
+PATCH	/api/users/{id}/role	Change user role	Admin
+DELETE	/api/users/{id}	Delete user	Admin
+GET	/api/promotions/list	List promotions	Admin
+GET	/api/promotions/{id}	Get promotion	Admin
+POST	/api/promotions/create	Create promotion	Admin
+PUT	/api/promotions/{id}	Update promotion	Admin
+DELETE	/api/promotions/{id}	Delete promotion	Admin
 🧪 Testes
 bash
 # Executar todos os testes

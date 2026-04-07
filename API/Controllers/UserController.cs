@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using FiapCloudGames.Application.DTOs;
 using FiapCloudGames.Application.Services;
 using FiapCloudGames.Domain.Entities;
+using System.Security.Claims;
 
 namespace FiapCloudGames.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -18,8 +19,9 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpGet("list")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ListAllUsers()
     {
         var users = await _userService.GetAllAsync();
         return Ok(users.Select(u => new UserResponseDto
@@ -32,7 +34,8 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetUserById(Guid id)
     {
         var user = await _userService.GetByIdAsync(id);
         if (user == null)
@@ -47,8 +50,47 @@ public class UserController : ControllerBase
         });
     }
 
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized("Usuário inválido");
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null)
+            return NotFound("Usuário não encontrado");
+
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role
+        });
+    }
+
+    [HttpPatch("me")]
+    public async Task<IActionResult> UpdateMyProfile(UpdateUserDto dto)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized("Usuário inválido");
+
+        var updatedUser = await _userService.UpdateAsync(userId, dto);
+        if (updatedUser == null)
+            return NotFound("Usuário não encontrado");
+
+        return Ok(new UserResponseDto
+        {
+            Id = updatedUser.Id,
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            Role = updatedUser.Role
+        });
+    }
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, UpdateUserDto dto)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateUserById(Guid id, UpdateUserDto dto)
     {
         var updatedUser = await _userService.UpdateAsync(id, dto);
         if (updatedUser == null)
@@ -64,7 +106,8 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUserById(Guid id)
     {
         if (!await _userService.DeleteAsync(id))
             return NotFound("Usuário não encontrado");
@@ -73,7 +116,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPatch("{id}/role")]
-    public async Task<IActionResult> ChangeRole(Guid id, ChangeUserRoleDto dto)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ChangeUserRole(Guid id, ChangeUserRoleDto dto)
     {
         try
         {

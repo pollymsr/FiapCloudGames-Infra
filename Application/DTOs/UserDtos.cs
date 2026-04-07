@@ -12,12 +12,10 @@ public class UserResponseDto
 
 public class UpdateUserDto
 {
-    [Required]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
-    [Required]
     [EmailAddress]
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     [MinLength(8)]
     [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).+$")]

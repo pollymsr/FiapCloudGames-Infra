@@ -49,10 +49,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 builder.Services.AddScoped<IUserDomainService, UserDomainService>();
 builder.Services.AddScoped<IGameDomainService, GameDomainService>();
+builder.Services.AddScoped<IPromotionDomainService, PromotionDomainService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IPromotionService, PromotionService>();
 
 builder.Services.AddApiVersioning(options =>
 {

@@ -23,11 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="FiapCloudGames.Tests\\**\\*.cs" />
-    <Compile Remove="Features\\**\\*.cs" />
-    <Compile Remove="Steps\\**\\*.cs" />
-    <None Remove="Features\\**\\*" />
-    <None Remove="Steps\\**\\*" />
+    <Compile Remove="tests\**" />
+    <EmbeddedResource Remove="tests\**" />
+    <None Remove="tests\**" />
   </ItemGroup>
 
 </Project>

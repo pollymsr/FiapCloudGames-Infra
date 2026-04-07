@@ -10,6 +10,6 @@ public interface IGameService
     Task<Game> CreateAsync(CreateGameDto dto);
     Task<Game?> UpdateAsync(Guid id, UpdateGameDto dto);
     Task<bool> DeleteAsync(Guid id);
-    Task<Game?> PurchaseAsync(Guid userId, Guid gameId);
+    Task<Game?> PurchaseAsync(Guid userId, Guid gameId, string? promotionCode = null);
     Task<List<Game>> GetLibraryAsync(Guid userId);
 }
