@@ -69,6 +69,22 @@ public class UserController : ControllerBase
         });
     }
 
+    [HttpGet("me/library")]
+    public async Task<IActionResult> GetMyLibrary()
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized("Usuário inválido");
+
+        var userGames = await _userService.GetUserGamesAsync(userId);
+        return Ok(userGames.Select(ug => new
+        {
+            GameId = ug.GameId,
+            GameTitle = ug.Game.Title,
+            GameDescription = ug.Game.Description,
+            PurchaseDate = ug.PurchaseDate
+        }));
+    }
+
     [HttpPatch("me")]
     public async Task<IActionResult> UpdateMyProfile(UpdateUserDto dto)
     {
@@ -123,6 +139,23 @@ public class UserController : ControllerBase
         {
             if (!await _userService.ChangeRoleAsync(id, dto))
                 return NotFound("Usuário não encontrado");
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("{userId}/games/{gameId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AssignGameToUser(Guid userId, Guid gameId)
+    {
+        try
+        {
+            if (!await _userService.AddGameToUserAsync(userId, gameId))
+                return BadRequest("Falha ao atribuir jogo");
 
             return NoContent();
         }

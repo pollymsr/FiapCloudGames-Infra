@@ -46,7 +46,10 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByIdAsync(Guid id)
     {
-        return await _context.Users.FindAsync(id);
+        return await _context.Users
+            .Include(u => u.UserGames)
+            .ThenInclude(ug => ug.Game)
+            .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<bool> EmailExistsAsync(string email)
@@ -58,6 +61,11 @@ public class UserRepository : IUserRepository
     {
         _context.Users.Update(user);
         await Task.CompletedTask;
+    }
+
+    public async Task AddUserGameAsync(UserGame userGame)
+    {
+        await _context.UserGames.AddAsync(userGame);
     }
 
     public async Task<bool> SaveChangesAsync()

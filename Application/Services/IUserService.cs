@@ -12,4 +12,6 @@ public interface IUserService
     Task<User?> UpdateAsync(Guid id, UpdateUserDto dto);
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ChangeRoleAsync(Guid id, ChangeUserRoleDto dto);
+    Task<List<UserGame>> GetUserGamesAsync(Guid userId);
+    Task<bool> AddGameToUserAsync(Guid userId, Guid gameId);
 }

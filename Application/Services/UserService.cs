@@ -106,6 +106,35 @@ public class UserService : IUserService
         return await _userRepository.SaveChangesAsync();
     }
 
+    public async Task<List<UserGame>> GetUserGamesAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new InvalidOperationException("Usuário não encontrado");
+
+        return user.UserGames.ToList();
+    }
+
+    public async Task<bool> AddGameToUserAsync(Guid userId, Guid gameId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new InvalidOperationException("Usuário não encontrado");
+
+        if (user.UserGames.Any(ug => ug.GameId == gameId))
+            throw new InvalidOperationException("Jogo já atribuído ao usuário");
+
+        var userGame = new UserGame
+        {
+            UserId = userId,
+            GameId = gameId,
+            PurchaseDate = DateTime.UtcNow
+        };
+
+        await _userRepository.AddUserGameAsync(userGame);
+        return await _userRepository.SaveChangesAsync();
+    }
+
     private string GenerateToken(User user)
     {
         var claims = new[]
