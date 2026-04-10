@@ -455,20 +455,10 @@ cd Tech-Challenge-Fiap-Cloud-Games</code></pre>
 <table>
 <thead>
 <tr>
-<th>Nome</th>
-<th>Discord</th>
+<th>Pollyana Rocha</th>
+<th>Pollyana Rocha - RM372429</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td>Nome</td>
-<td>username</td>
-</tr>
-<tr>
-<td>Nome</td>
-<td>username</td>
-</tr>
-</tbody>
 </table>
 
 <hr>
