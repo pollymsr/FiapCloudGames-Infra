@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using FiapCloudGames.Application.DTOs;
 using FiapCloudGames.Application.Services;
 using System.Security.Claims;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace FiapCloudGames.API.Controllers;
 
 [ApiController]
 [Route("api/games")]
 [Authorize]
+[Tags("Jogos")]
 public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;
@@ -18,8 +20,9 @@ public class GameController : ControllerBase
         _gameService = gameService;
     }
 
-    [HttpGet("list")]
+    [HttpGet("list-all")]
     [AllowAnonymous]
+    [SwaggerOperation(Summary = "Get All Games")]
     public async Task<IActionResult> ListAllGames()
     {
         var games = await _gameService.GetAllAsync();
@@ -28,6 +31,7 @@ public class GameController : ControllerBase
 
     [HttpGet("{id}")]
     [AllowAnonymous]
+    [SwaggerOperation(Summary = "Get Game By Id")]
     public async Task<IActionResult> GetGameById(Guid id)
     {
         var game = await _gameService.GetByIdAsync(id);
@@ -39,6 +43,7 @@ public class GameController : ControllerBase
 
     [HttpPost("create")]
     [Authorize(Roles = "Admin")]
+    [SwaggerOperation(Summary = "Create Game")]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
         var game = await _gameService.CreateAsync(dto);
@@ -47,6 +52,7 @@ public class GameController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
+    [SwaggerOperation(Summary = "Update Game By Id")]
     public async Task<IActionResult> UpdateGameById(Guid id, [FromBody] UpdateGameDto dto)
     {
         var game = await _gameService.UpdateAsync(id, dto);
@@ -58,6 +64,7 @@ public class GameController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
+    [SwaggerOperation(Summary = "Delete Game By Id")]
     public async Task<IActionResult> DeleteGameById(Guid id)
     {
         if (!await _gameService.DeleteAsync(id))
@@ -67,6 +74,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("{id}/purchase")]
+    [SwaggerOperation(Summary = "Buy Game")]
     public async Task<IActionResult> BuyGame(Guid id, [FromQuery] string? promotionCode = null)
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
@@ -95,6 +103,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("library")]
+    [SwaggerOperation(Summary = "Get My Games")]
     public async Task<IActionResult> GetMyLibrary()
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))

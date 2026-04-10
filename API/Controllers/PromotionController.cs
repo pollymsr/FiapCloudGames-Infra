@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FiapCloudGames.Application.DTOs;
 using FiapCloudGames.Application.Services;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace FiapCloudGames.API.Controllers;
 
 [ApiController]
 [Route("api/promotions")]
 [Authorize(Roles = "Admin")]
+[Tags("Promoções")]
 public class PromotionController : ControllerBase
 {
     private readonly IPromotionService _promotionService;
@@ -18,6 +20,7 @@ public class PromotionController : ControllerBase
     }
 
     [HttpGet("list")]
+    [SwaggerOperation(Summary = "Get All Promotions")]
     public async Task<IActionResult> ListAllPromotions()
     {
         var promotions = await _promotionService.GetAllAsync();
@@ -36,6 +39,7 @@ public class PromotionController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Get Promotion By Id")]
     public async Task<IActionResult> GetPromotionById(Guid id)
     {
         var promotion = await _promotionService.GetByIdAsync(id);
@@ -57,23 +61,13 @@ public class PromotionController : ControllerBase
     }
 
     [HttpPost("create")]
+    [SwaggerOperation(Summary = "Create Promotion")]
     public async Task<IActionResult> CreatePromotion([FromBody] CreatePromotionDto dto)
     {
         try
         {
             var promotion = await _promotionService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetPromotionById), new { id = promotion.Id }, new PromotionResponseDto
-            {
-                Id = promotion.Id,
-                Code = promotion.Code,
-                Description = promotion.Description,
-                DiscountPercentage = promotion.DiscountPercentage,
-                StartDate = promotion.StartDate,
-                EndDate = promotion.EndDate,
-                IsActive = promotion.IsActive,
-                MaxUses = promotion.MaxUses,
-                CurrentUses = promotion.CurrentUses
-            });
+            return CreatedAtAction(nameof(GetPromotionById), new { id = promotion.Id }, promotion);
         }
         catch (InvalidOperationException ex)
         {
@@ -82,6 +76,7 @@ public class PromotionController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [SwaggerOperation(Summary = "Update Promotion By Id")]
     public async Task<IActionResult> UpdatePromotionById(Guid id, [FromBody] UpdatePromotionDto dto)
     {
         try
@@ -90,18 +85,7 @@ public class PromotionController : ControllerBase
             if (promotion == null)
                 return NotFound("Promoção não encontrada");
 
-            return Ok(new PromotionResponseDto
-            {
-                Id = promotion.Id,
-                Code = promotion.Code,
-                Description = promotion.Description,
-                DiscountPercentage = promotion.DiscountPercentage,
-                StartDate = promotion.StartDate,
-                EndDate = promotion.EndDate,
-                IsActive = promotion.IsActive,
-                MaxUses = promotion.MaxUses,
-                CurrentUses = promotion.CurrentUses
-            });
+            return Ok(promotion);
         }
         catch (InvalidOperationException ex)
         {
@@ -110,6 +94,7 @@ public class PromotionController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [SwaggerOperation(Summary = "Delete Promotion By Id")]
     public async Task<IActionResult> DeletePromotionById(Guid id)
     {
         if (!await _promotionService.DeleteAsync(id))

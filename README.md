@@ -1,275 +1,482 @@
-# 🎮 FiapCloudGames - API de Plataforma de Jogos Digitais
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiap Cloud Games API - README</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        h3 { color: #555; }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+        }
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .badge-admin { background-color: #e74c3c; color: white; }
+        .badge-user { background-color: #2ecc71; color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
 
-Tech Challenge - Fase 1 | FIAP
+<h1>🎮 Fiap Cloud Games API</h1>
 
-## 📋 Sobre o Projeto
+<p>API REST desenvolvida em <strong>.NET 8</strong> para gerenciamento de usuários, autenticação, biblioteca de jogos digitais e promoções, como parte do Tech Challenge.</p>
 
-API REST desenvolvida para a FIAP Cloud Games, uma plataforma de venda de jogos digitais e gestão de biblioteca de jogos adquiridos. Implementa arquitetura em camadas com autenticação JWT, autorização baseada em roles e testes abrangentes.
+<hr>
 
-## 🚀 Tecnologias
+<h2>📌 Sobre o projeto</h2>
 
-- **.NET 9** - Framework principal
-- **Entity Framework Core** - ORM para acesso a dados
-- **SQLite** - Banco de dados
-- **JWT Authentication** - Autenticação baseada em tokens
-- **BCrypt.Net-Next** - Hashing de senhas
-- **Swagger/OpenAPI** - Documentação da API
-- **xUnit** - Framework de testes unitários
-- **SpecFlow** - Framework BDD para testes de comportamento
-- **Microsoft.AspNetCore.Mvc.Versioning** - Versionamento de API
+<p>A <strong>Fiap Cloud Games (FCG)</strong> é uma plataforma de venda de jogos digitais com foco educacional.</p>
 
-## ✨ Funcionalidades Implementadas
+<p>Nesta fase (MVP), o objetivo foi construir uma API capaz de:</p>
 
-### Autenticação e Autorização
-- ✅ Cadastro de usuários com validação de dados
-- ✅ Login com geração de token JWT
-- ✅ Dois níveis de acesso: User e Admin
-- ✅ Controle de acesso baseado em roles
-- ✅ Seed automático de usuário administrador
+<ul>
+<li>Gerenciar usuários</li>
+<li>Autenticar via JWT</li>
+<li>Controlar níveis de acesso (User e Admin)</li>
+<li>Gerenciar jogos e biblioteca</li>
+<li>Permitir administração da plataforma</li>
+<li>Gerenciar promoções</li>
+</ul>
 
-### Gestão de Jogos
-- ✅ Listagem de jogos disponíveis (público)
-- ✅ CRUD completo de jogos (Admin)
-- ✅ Compra de jogos por usuários
-- ✅ Biblioteca pessoal do usuário
-- ✅ Validação de saldo e duplicatas
+<hr>
 
-### Gestão de Usuários (Admin)
-- ✅ Listagem de todos os usuários
-- ✅ Visualização de detalhes de usuário
-- ✅ Alteração de roles (User ↔ Admin)
-- ✅ Exclusão de usuários
+<h2>🚀 Tecnologias utilizadas</h2>
 
-### Testes e Qualidade
-- ✅ 9 testes unitários passando
-- ✅ Testes BDD com SpecFlow
-- ✅ Cobertura de cenários críticos
-- ✅ Middleware de tratamento de erros
-- ✅ Middleware de logging de requisições
+<ul>
+<li>.NET 8</li>
+<li>ASP.NET Core</li>
+<li>Entity Framework Core</li>
+<li>SQLite</li>
+<li>JWT Authentication</li>
+<li>Swagger / OpenAPI</li>
+<li>BCrypt</li>
+<li>xUnit</li>
+<li>Moq</li>
+<li>SpecFlow</li>
+</ul>
 
-## 🏗️ Arquitetura
+<hr>
 
-O projeto segue os princípios de **Clean Architecture** com separação em camadas:
+<h2>📂 Arquitetura</h2>
 
-```
-FiapCloudGames/
-├── API/                    # Camada de Apresentação
-│   ├── Controllers/        # Endpoints REST
-│   └── Middleware/         # Middlewares customizados
-├── Application/            # Camada de Aplicação
-│   ├── DTOs/              # Objetos de Transferência de Dados
-│   └── Services/          # Serviços de Aplicação
-├── Domain/                 # Camada de Domínio
-│   ├── Entities/          # Entidades de negócio
-│   └── Services/          # Serviços de Domínio
-├── Infrastructure/         # Camada de Infraestrutura
-│   ├── Data/              # Contexto do banco e seed
-│   └── Repositories/      # Implementações de repositório
-└── FiapCloudGames.Tests/   # Testes
-    ├── Controllers/       # Testes unitários
-    ├── Features/          # Cenários BDD
-    └── Steps/             # Implementação dos steps BDD
-```
+<p>O projeto segue uma arquitetura monolítica organizada em camadas:</p>
 
-## 🔧 Como Executar
+<ul>
+<li><strong>Domain</strong> → entidades e regras de negócio</li>
+<li><strong>Application</strong> → serviços e casos de uso</li>
+<li><strong>Infrastructure</strong> → persistência e repositórios</li>
+<li><strong>API</strong> → controllers, middlewares e configuração</li>
+</ul>
 
-### Pré-requisitos
-- .NET 9 SDK instalado
-- SQLite (incluído no projeto)
+<hr>
 
-### Instalação e Execução
+<h2>🔐 Autenticação e Autorização</h2>
 
-1. **Clone o repositório:**
-   ```bash
-   git clone <url-do-repositorio>
-   cd FiapCloudGames-Correto
-   ```
+<p>A autenticação é feita via <strong>JWT (JSON Web Token)</strong>.</p>
 
-2. **Restaure as dependências:**
-   ```bash
-   dotnet restore
-   ```
+<h3>Perfis de acesso</h3>
 
-3. **Execute as migrações do banco:**
-   ```bash
-   dotnet ef database update
-   ```
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Permissões</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td>Acessar jogos e biblioteca</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td>Gerenciar jogos, usuários e promoções</td>
+</tr>
+</tbody>
+</table>
 
-4. **Execute a aplicação:**
-   ```bash
-   dotnet run --urls=http://localhost:5169
-   ```
+<hr>
 
-5. **Acesse a documentação:**
-   - Swagger UI: http://localhost:5169/swagger
-   - API Base: http://localhost:5169/api
+<h2>👤 Usuários padrão (Seed)</h2>
 
-### Credenciais de Admin
+<p>Ao iniciar a aplicação, são criados usuários automaticamente:</p>
 
-Após a primeira execução, um usuário administrador é criado automaticamente:
-- **Email:** admin@fiapcloudgames.com
-- **Senha:** Admin@123
+<h3>Admin</h3>
+<ul>
+<li>Email: <code>admin@fiapcloudgames.com</code></li>
+<li>Senha: <code>Adm1n@SecurePass2026</code></li>
+</ul>
 
-## 📚 API Endpoints
+<h3>Usuário comum</h3>
+<ul>
+<li>Email: <code>user@fiapcloudgames.com</code></li>
+<li>Senha: <code>User@SecurePass2026</code></li>
+</ul>
 
-### Authentication
-```
-POST /api/auth/register  - Register new user
-POST /api/auth/login     - User login (returns JWT token)
-```
+<hr>
 
-### Games - Public (AllowAnonymous)
-```
-GET /api/games/list      - List all available games
-GET /api/games/{id}      - Get game details by ID
-```
+<h2>▶️ Como rodar o projeto</h2>
 
-### Games - User (Authenticated)
-```
-POST /api/games/{id}/purchase?promotionCode=CODE - Buy game (optional promotion code)
-GET  /api/games/library                           - Get my purchased games library
-```
+<h3>1. Clonar o repositório</h3>
 
-### Games - Admin Only
-```
-POST   /api/games/create        - Create new game
-PUT    /api/games/{id}          - Update game by ID
-DELETE /api/games/{id}          - Delete game by ID
-```
+<pre><code>git clone &lt;URL_DO_REPOSITORIO&gt;
+cd Tech-Challenge-Fiap-Cloud-Games</code></pre>
 
-### User Profile - Authenticated User
-```
-GET   /api/users/me             - Get my profile information
-PATCH /api/users/me             - Update my profile (name, email, password)
-```
+<h3>2. Restaurar dependências</h3>
 
-### Users Management - Admin Only
-```
-GET    /api/users/list          - List all users
-GET    /api/users/{id}          - Get user details by ID
-PUT    /api/users/{id}          - Update user by ID
-PATCH  /api/users/{id}/role     - Change user role (User ↔ Admin)
-DELETE /api/users/{id}          - Delete user by ID
-```
+<pre><code>dotnet restore .\FiapCloudGames\FiapCloudGames.sln</code></pre>
 
-### Promotions - Admin Only
-```
-GET    /api/promotions/list     - List all promotions
-GET    /api/promotions/{id}     - Get promotion details by ID
-POST   /api/promotions/create   - Create new promotion
-PUT    /api/promotions/{id}     - Update promotion by ID
-DELETE /api/promotions/{id}     - Delete promotion by ID
-```
+<h3>3. Compilar a solução</h3>
 
-## 🧪 Executar Testes
+<pre><code>dotnet build .\FiapCloudGames\FiapCloudGames.sln</code></pre>
 
-### Testes Unitários
-```bash
-dotnet test FiapCloudGames.Tests/FiapCloudGames.Tests.csproj
-```
+<h3>4. Executar a API</h3>
 
-### Testes BDD (SpecFlow)
-```bash
-dotnet test FiapCloudGames.Tests/FiapCloudGames.Tests.csproj --filter "Category=BDD"
-```
+<pre><code>dotnet run --project .\FiapCloudGames</code></pre>
 
-## 🔒 Segurança
+<h3>5. Acessar o Swagger</h3>
 
-- **JWT Tokens:** Autenticação stateless com expiração
-- **BCrypt:** Hashing seguro de senhas
-- **Role-based Access Control:** Controle granular de permissões
-- **Input Validation:** Validação de dados em DTOs
-- **SQL Injection Protection:** Uso de EF Core com parâmetros
+<pre><code>http://localhost:5169/swagger</code></pre>
 
-## 📊 Status dos Testes
+<hr>
 
-- ✅ **9/9 testes unitários** passando
-- ✅ **Testes BDD** implementados
-- ✅ **Cobertura de cenários críticos** (login, registro, autorização)
-- ✅ **Testes de integração** via HTTP requests
+<h2>🔑 Como autenticar no Swagger</h2>
 
-## 🎯 Requisitos do Tech Challenge - Fase 1
+<ol>
+<li>Execute o login no endpoint de autenticação</li>
+<li>Copie o token JWT retornado</li>
+<li>Clique em <strong>Authorize</strong></li>
+<li>Informe no formato: <code>Bearer SEU_TOKEN</code></li>
+</ol>
 
-| Requisito | Status | Descrição |
-|-----------|--------|-----------|
-| API REST | ✅ | Endpoints RESTful implementados |
-| Autenticação | ✅ | JWT com login/registro |
-| Autorização | ✅ | Roles User/Admin |
-| CRUD Jogos | ✅ | Operações completas |
-| Compra de Jogos | ✅ | Sistema de biblioteca |
-| Gestão Admin | ✅ | CRUD de usuários |
-| Testes | ✅ | Unitários + BDD |
-| Documentação | ✅ | Swagger + README |
-| Arquitetura | ✅ | Clean Architecture |
-| Segurança | ✅ | Hashing + RBAC |
+<hr>
 
-## 🤝 Contribuição
+<h2>📡 Principais endpoints</h2>
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+<h3>Autenticação</h3>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Endpoint</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>Cadastrar usuário</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>Autenticar usuário</td>
+</tr>
+</tbody>
+</table>
 
-## 📝 Licença
+<h3>Jogos</h3>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Endpoint</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/games</code></td>
+<td>Listar jogos</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/{id}</code></td>
+<td>Buscar jogo por id</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games</code></td>
+<td>Criar jogo</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/games/{id}</code></td>
+<td>Atualizar jogo</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/games/{id}</code></td>
+<td>Remover jogo</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/{id}/purchase</code></td>
+<td>Comprar jogo</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/library</code></td>
+<td>Listar biblioteca do usuário autenticado</td>
+</tr>
+</tbody>
+</table>
 
-Este projeto é parte do Tech Challenge da FIAP.
+<h3>Promoções</h3>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Endpoint</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/promotions</code></td>
+<td>Listar promoções</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/promotions/{id}</code></td>
+<td>Buscar promoção por id</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/promotions</code></td>
+<td>Criar promoção</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/promotions/{id}</code></td>
+<td>Atualizar promoção</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/promotions/{id}</code></td>
+<td>Remover promoção</td>
+</tr>
+</tbody>
+</table>
 
-```bash
-# Clonar o repositório
-git clone https://github.com/SEU_USUARIO/FiapCloudGames.git
+<h3>Usuários</h3>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Endpoint</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/users</code></td>
+<td>Listar usuários</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/{id}</code></td>
+<td>Buscar usuário por id</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/me</code></td>
+<td>Perfil do usuário autenticado</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/me/library</code></td>
+<td>Biblioteca detalhada do usuário autenticado</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/users/me</code></td>
+<td>Atualizar próprio perfil</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/users/{id}</code></td>
+<td>Atualizar usuário por id</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/users/{id}</code></td>
+<td>Remover usuário</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/users/{id}/role</code></td>
+<td>Alterar role do usuário</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/users/{userId}/games/{gameId}</code></td>
+<td>Atribuir jogo a um usuário</td>
+</tr>
+</tbody>
+</table>
 
-# Entrar na pasta
-cd FiapCloudGames
+<hr>
 
-# Restaurar pacotes
-dotnet restore
+<h2>🧪 Testes</h2>
 
-# Criar banco de dados
-dotnet ef database update
+<p>Os testes estão no projeto: <code>FiapCloudGames.Tests</code></p>
 
-# Executar a API
-dotnet run
-Acesse: http://localhost:5169/swagger
+<h3>Tipos de testes implementados</h3>
+<ul>
+<li>Testes unitários</li>
+<li>Testes de controller com mocks</li>
+<li>Testes BDD com SpecFlow</li>
+</ul>
 
-📝 Endpoints Principais
-Método	Endpoint	Descrição	Role
-POST	/api/auth/register	Register new user	-
-POST	/api/auth/login	User login	-
-GET	/api/games/list	List all games	Public
-GET	/api/games/{id}	Get game details	Public
-POST	/api/games/create	Create game	Admin
-PUT	/api/games/{id}	Update game	Admin
-DELETE	/api/games/{id}	Delete game	Admin
-POST	/api/games/{id}/purchase	Buy game	User
-GET	/api/games/library	Get my library	User
-GET	/api/users/me	Get my profile	User
-PATCH	/api/users/me	Update my profile	User
-GET	/api/users/list	List all users	Admin
-GET	/api/users/{id}	Get user details	Admin
-PUT	/api/users/{id}	Update user	Admin
-PATCH	/api/users/{id}/role	Change user role	Admin
-DELETE	/api/users/{id}	Delete user	Admin
-GET	/api/promotions/list	List promotions	Admin
-GET	/api/promotions/{id}	Get promotion	Admin
-POST	/api/promotions/create	Create promotion	Admin
-PUT	/api/promotions/{id}	Update promotion	Admin
-DELETE	/api/promotions/{id}	Delete promotion	Admin
-🧪 Testes
-bash
-# Executar todos os testes
-dotnet test
+<h3>Executar testes</h3>
 
-# Resultado: 7 testes, 0 falhas
-👥 Autores
-Pollyana Manuela Silva Rocha
+<pre><code>dotnet test .\FiapCloudGames\FiapCloudGames.sln</code></pre>
 
-📄 Licença
-Este projeto foi desenvolvido para fins educacionais - FIAP
+<hr>
 
-🔗 Links
-Repositório
+<h2>📊 Persistência de dados</h2>
 
-Vídeo de Apresentação
+<ul>
+<li><strong>Banco utilizado:</strong> SQLite</li>
+<li><strong>ORM:</strong> Entity Framework Core</li>
+<li>Migrations aplicadas automaticamente na inicialização</li>
+</ul>
 
-Documentação DDD - Miro
+<hr>
+
+<h2>🛡️ Middlewares</h2>
+
+<p>O projeto inclui:</p>
+
+<ul>
+<li>Middleware de tratamento de exceções</li>
+<li>Middleware de logging estruturado</li>
+</ul>
+
+<hr>
+
+<h2>📐 Documentação DDD</h2>
+
+<p>A documentação de domínio inclui:</p>
+
+<ul>
+<li>Event Storming</li>
+<li>Modelagem de entidades</li>
+<li>Fluxos de criação de usuários</li>
+<li>Fluxos de criação de jogos</li>
+</ul>
+
+<p>👉 <code>[LINK_DA_DOCUMENTACAO_AQUI]</code></p>
+
+<hr>
+
+<h2>🎥 Demonstração</h2>
+
+<p>Vídeo de apresentação do projeto:</p>
+
+<p>👉 <code>[LINK_DO_VIDEO_AQUI]</code></p>
+
+<hr>
+
+<h2>👥 Equipe</h2>
+
+<p><strong>Nome do grupo:</strong> <code>[NOME DO GRUPO]</code></p>
+
+<h3>Integrantes:</h3>
+
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Discord</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nome</td>
+<td>username</td>
+</tr>
+<tr>
+<td>Nome</td>
+<td>username</td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>📄 Licença</h2>
+
+<p>Projeto acadêmico para fins educacionais.</p>
+
+</div>
+</body>
+</html>
