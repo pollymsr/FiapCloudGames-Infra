@@ -19,7 +19,7 @@ public class PromotionController : ControllerBase
         _promotionService = promotionService;
     }
 
-    [HttpGet("list")]
+    [HttpGet]
     [SwaggerOperation(Summary = "Get All Promotions")]
     public async Task<IActionResult> ListAllPromotions()
     {
@@ -60,7 +60,7 @@ public class PromotionController : ControllerBase
         });
     }
 
-    [HttpPost("create")]
+    [HttpPost]
     [SwaggerOperation(Summary = "Create Promotion")]
     public async Task<IActionResult> CreatePromotion([FromBody] CreatePromotionDto dto)
     {

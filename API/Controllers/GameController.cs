@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FiapCloudGames.Application.DTOs;
 using FiapCloudGames.Application.Services;
@@ -20,7 +20,7 @@ public class GameController : ControllerBase
         _gameService = gameService;
     }
 
-    [HttpGet("list-all")]
+    [HttpGet]
     [AllowAnonymous]
     [SwaggerOperation(Summary = "Get All Games")]
     public async Task<IActionResult> ListAllGames()
@@ -41,7 +41,7 @@ public class GameController : ControllerBase
         return Ok(game);
     }
 
-    [HttpPost("create")]
+    [HttpPost]
     [Authorize(Roles = "Admin")]
     [SwaggerOperation(Summary = "Create Game")]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
