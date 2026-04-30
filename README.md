@@ -347,12 +347,12 @@ cd Tech-Challenge-Fiap-Cloud-Games</code></pre>
 
 <ul>
 <li>Event Storming</li>
-<li>Modelagem de entidades</li>
 <li>Fluxos de criação de usuários</li>
 <li>Fluxos de criação de jogos</li>
+<li>Fluxos de criação de promoções</li>
 </ul>
 
-<p>👉 <code>[LINK_DA_DOCUMENTACAO_AQUI]</code></p>
+<p>👉 <code>https://miro.com/welcomeonboard/eUlXQlJiNTdtay81ejFhbTh2TVBCS3BzdVZHa2ZFWG5FcmpPeWtqWTZDS2hWNTZtbTJrVjhFRU5aQkg4SHV1bnAwYmNacDE5TW5aaWwydnNnZ3JhZVA3MEZBYzZtc08yaGZ6eXpwTGdvSlY5bFMzOXQyaXF2R0dFdzFaVjlZc25BS2NFMDFkcUNFSnM0d3FEN050ekl3PT0hdjE=?share_link_id=127801181002</code></p>
 
 <hr>
 
@@ -360,7 +360,7 @@ cd Tech-Challenge-Fiap-Cloud-Games</code></pre>
 
 <p>Vídeo de apresentação do projeto:</p>
 
-<p>👉 <code>[LINK_DO_VIDEO_AQUI]</code></p>
+<p>👉 <code>https://www.youtube.com/watch?v=jK4k5t0l8l4</code></p>
 
 <hr>
 
