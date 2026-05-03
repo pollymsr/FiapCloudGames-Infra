@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using FiapCloudGames.API.Middlewares;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,10 @@ builder.Services.AddSwaggerGen(c =>
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -112,7 +116,10 @@ if (app.Environment.IsDevelopment())
 }
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 

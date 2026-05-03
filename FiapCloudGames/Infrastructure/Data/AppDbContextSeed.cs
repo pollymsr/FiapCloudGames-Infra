@@ -12,6 +12,16 @@ public static class AppDbContextSeed
 
         context.Database.Migrate();
 
+        // Limpar outros usuários de teste para o vídeo
+        var emailsToKeep = new[] { "admin@fiapcloudgames.com", "user@fiapcloudgames.com" };
+        var usersToDelete = context.Users.Where(u => !emailsToKeep.Contains(u.Email)).ToList();
+        if (usersToDelete.Any())
+        {
+            context.Users.RemoveRange(usersToDelete);
+            context.SaveChanges();
+            Console.WriteLine($"{usersToDelete.Count} usuários de teste removidos.");
+        }
+
         const string adminEmail = "admin@fiapcloudgames.com";
         var adminEmailLower = adminEmail.ToLowerInvariant();
         var existingAdmin = context.Users.FirstOrDefault(u => u.Email == adminEmailLower);
@@ -31,7 +41,9 @@ public static class AppDbContextSeed
         }
         else
         {
-            Console.WriteLine("Admin já existe.");
+            existingAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Adm1n@SecurePass2026");
+            existingAdmin.Role = "Admin"; // Garantir que é Admin
+            Console.WriteLine("Admin atualizado com sucesso!");
         }
 
         const string defaultUserEmail = "user@fiapcloudgames.com";
@@ -53,7 +65,9 @@ public static class AppDbContextSeed
         }
         else
         {
-            Console.WriteLine("Usuário padrão já existe.");
+            existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@SecurePass2026");
+            existingUser.Role = "User";
+            Console.WriteLine("Usuário padrão atualizado com sucesso!");
         }
 
         if (!context.Games.Any())
