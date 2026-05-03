@@ -26,7 +26,15 @@ public class GameController : ControllerBase
     public async Task<IActionResult> ListAllGames()
     {
         var games = await _gameService.GetAllAsync();
-        return Ok(games);
+        return Ok(games.Select(g => new GameResponseDto
+        {
+            Id = g.Id,
+            Title = g.Title,
+            Description = g.Description,
+            Price = g.Price,
+            Genre = g.Genre,
+            ReleaseDate = g.ReleaseDate
+        }));
     }
 
     [HttpGet("{id}")]
@@ -38,7 +46,15 @@ public class GameController : ControllerBase
         if (game == null)
             return NotFound("Jogo não encontrado");
 
-        return Ok(game);
+        return Ok(new GameResponseDto
+        {
+            Id = game.Id,
+            Title = game.Title,
+            Description = game.Description,
+            Price = game.Price,
+            Genre = game.Genre,
+            ReleaseDate = game.ReleaseDate
+        });
     }
 
     [HttpPost]
@@ -47,7 +63,16 @@ public class GameController : ControllerBase
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
         var game = await _gameService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game);
+        var response = new GameResponseDto
+        {
+            Id = game.Id,
+            Title = game.Title,
+            Description = game.Description,
+            Price = game.Price,
+            Genre = game.Genre,
+            ReleaseDate = game.ReleaseDate
+        };
+        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, response);
     }
 
     [HttpPut("{id}")]
@@ -59,7 +84,15 @@ public class GameController : ControllerBase
         if (game == null)
             return NotFound("Jogo não encontrado");
 
-        return Ok(game);
+        return Ok(new GameResponseDto
+        {
+            Id = game.Id,
+            Title = game.Title,
+            Description = game.Description,
+            Price = game.Price,
+            Genre = game.Genre,
+            ReleaseDate = game.ReleaseDate
+        });
     }
 
     [HttpDelete("{id}")]
@@ -110,6 +143,14 @@ public class GameController : ControllerBase
             return Unauthorized("Usuário inválido");
 
         var games = await _gameService.GetLibraryAsync(userId);
-        return Ok(games);
+        return Ok(games.Select(g => new GameResponseDto
+        {
+            Id = g.Id,
+            Title = g.Title,
+            Description = g.Description,
+            Price = g.Price,
+            Genre = g.Genre,
+            ReleaseDate = g.ReleaseDate
+        }));
     }
 }

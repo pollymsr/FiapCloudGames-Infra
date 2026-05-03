@@ -1,5 +1,3 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FiapCloudGames.API.Middlewares;
@@ -32,16 +30,39 @@ public class ExceptionMiddleware
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
+        var statusCode = StatusCodes.Status500InternalServerError;
+        var title = "Erro interno do servidor";
+        var detail = _environment.IsDevelopment() ? exception.Message : "Ocorreu um erro interno no servidor.";
+
+        if (exception is UnauthorizedAccessException)
+        {
+            statusCode = StatusCodes.Status403Forbidden;
+            title = "Acesso Negado";
+            detail = "Você não tem permissão para acessar este recurso.";
+        }
+        else if (exception is InvalidOperationException)
+        {
+            statusCode = StatusCodes.Status400BadRequest;
+            title = "Operação Inválida";
+            detail = exception.Message;
+        }
+        else if (exception is KeyNotFoundException)
+        {
+            statusCode = StatusCodes.Status404NotFound;
+            title = "Não Encontrado";
+            detail = exception.Message;
+        }
+
         var problem = new ProblemDetails
         {
-            Status = StatusCodes.Status500InternalServerError,
-            Title = "Erro interno do servidor",
-            Detail = _environment.IsDevelopment() ? exception.Message : "Ocorreu um erro interno no servidor.",
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
             Instance = context.Request.Path
         };
 
         context.Response.ContentType = "application/problem+json";
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.StatusCode = statusCode;
 
         return context.Response.WriteAsJsonAsync(problem);
     }

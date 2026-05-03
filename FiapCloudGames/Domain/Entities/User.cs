@@ -1,4 +1,6 @@
-﻿namespace FiapCloudGames.Domain.Entities;
+using System.Text.Json.Serialization;
+
+namespace FiapCloudGames.Domain.Entities;
 
 public class User
 {
@@ -7,5 +9,6 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+    [JsonIgnore]
     public List<UserGame> UserGames { get; set; } = new();
 }

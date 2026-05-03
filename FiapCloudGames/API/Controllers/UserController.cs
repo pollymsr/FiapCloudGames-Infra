@@ -26,7 +26,13 @@ public class UserController : ControllerBase
     public async Task<IActionResult> ListAllUsers()
     {
         var users = await _userService.GetAllAsync();
-        return Ok(users);
+        return Ok(users.Select(u => new UserResponseDto
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Email = u.Email,
+            Role = u.Role
+        }));
     }
 
     [HttpGet("{id}")]
@@ -38,7 +44,13 @@ public class UserController : ControllerBase
         if (user == null)
             return NotFound("Usuário não encontrado");
 
-        return Ok(user);
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role
+        });
     }
 
     [HttpGet("me")]
@@ -52,7 +64,13 @@ public class UserController : ControllerBase
         if (user == null)
             return NotFound("Usuário não encontrado");
 
-        return Ok(user);
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role
+        });
     }
 
     [HttpGet("me/library")]
@@ -77,7 +95,13 @@ public class UserController : ControllerBase
         if (updatedUser == null)
             return NotFound("Usuário não encontrado");
 
-        return Ok(updatedUser);
+        return Ok(new UserResponseDto
+        {
+            Id = updatedUser.Id,
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            Role = updatedUser.Role
+        });
     }
 
     [HttpPut("{id}")]
@@ -89,7 +113,13 @@ public class UserController : ControllerBase
         if (updatedUser == null)
             return NotFound("Usuário não encontrado");
 
-        return Ok(updatedUser);
+        return Ok(new UserResponseDto
+        {
+            Id = updatedUser.Id,
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            Role = updatedUser.Role
+        });
     }
 
     [HttpDelete("{id}")]

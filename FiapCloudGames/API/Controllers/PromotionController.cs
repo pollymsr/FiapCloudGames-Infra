@@ -82,10 +82,18 @@ public class PromotionController : ControllerBase
         try
         {
             var promotion = await _promotionService.UpdateAsync(id, dto);
-            if (promotion == null)
-                return NotFound("Promoção não encontrada");
-
-            return Ok(promotion);
+            return Ok(new PromotionResponseDto
+            {
+                Id = promotion.Id,
+                Code = promotion.Code,
+                Description = promotion.Description,
+                DiscountPercentage = promotion.DiscountPercentage,
+                StartDate = promotion.StartDate,
+                EndDate = promotion.EndDate,
+                IsActive = promotion.IsActive,
+                MaxUses = promotion.MaxUses,
+                CurrentUses = promotion.CurrentUses
+            });
         }
         catch (InvalidOperationException ex)
         {

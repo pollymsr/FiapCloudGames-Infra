@@ -1,4 +1,6 @@
-﻿namespace FiapCloudGames.Domain.Entities;
+using System.Text.Json.Serialization;
+
+namespace FiapCloudGames.Domain.Entities;
 
 public class Game
 {
@@ -8,5 +10,6 @@ public class Game
     public decimal Price { get; set; }
     public string Genre { get; set; } = string.Empty;
     public DateTime ReleaseDate { get; set; }
+    [JsonIgnore]
     public List<UserGame> UserGames { get; set; } = new();
 }
