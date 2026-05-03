@@ -82,6 +82,9 @@ public class PromotionController : ControllerBase
         try
         {
             var promotion = await _promotionService.UpdateAsync(id, dto);
+            if (promotion == null)
+                return NotFound("Promoção não encontrada");
+
             return Ok(new PromotionResponseDto
             {
                 Id = promotion.Id,
