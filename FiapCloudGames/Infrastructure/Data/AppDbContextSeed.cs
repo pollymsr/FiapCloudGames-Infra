@@ -12,7 +12,6 @@ public static class AppDbContextSeed
 
         context.Database.Migrate();
 
-        // Limpar outros usuários de teste para o vídeo
         var emailsToKeep = new[] { "admin@fiapcloudgames.com", "user@fiapcloudgames.com" };
         var usersToDelete = context.Users.Where(u => !emailsToKeep.Contains(u.Email)).ToList();
         if (usersToDelete.Any())

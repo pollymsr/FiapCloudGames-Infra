@@ -34,7 +34,6 @@ public class GameServiceTests
     [Fact]
     public async Task PurchaseAsync_ShouldSucceed_WhenUserAndGameExist()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var gameId = Guid.NewGuid();
         var user = new User { Id = userId };
@@ -44,10 +43,8 @@ public class GameServiceTests
         _gameRepositoryMock.Setup(r => r.GetByIdAsync(gameId)).ReturnsAsync(game);
         _gameRepositoryMock.Setup(r => r.UserOwnsGameAsync(userId, gameId)).ReturnsAsync(false);
 
-        // Act
         var result = await _gameService.PurchaseAsync(userId, gameId);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Epic Game");
         _gameRepositoryMock.Verify(r => r.AddUserGameAsync(It.IsAny<UserGame>()), Times.Once);
@@ -57,7 +54,6 @@ public class GameServiceTests
     [Fact]
     public async Task PurchaseAsync_ShouldThrowException_WhenUserAlreadyOwnsGame()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var gameId = Guid.NewGuid();
         var user = new User { Id = userId };
@@ -67,23 +63,18 @@ public class GameServiceTests
         _gameRepositoryMock.Setup(r => r.GetByIdAsync(gameId)).ReturnsAsync(game);
         _gameRepositoryMock.Setup(r => r.UserOwnsGameAsync(userId, gameId)).ReturnsAsync(true);
 
-        // Act
         var act = async () => await _gameService.PurchaseAsync(userId, gameId);
 
-        // Assert
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Usuário já possui este jogo.");
     }
 
     [Fact]
     public async Task CreateAsync_ShouldCallDomainValidation()
     {
-        // Arrange
         var dto = new CreateGameDto { Title = "New Game", Price = 50, Genre = "Action", Description = "Desc" };
 
-        // Act
         await _gameService.CreateAsync(dto);
 
-        // Assert
         _gameDomainServiceMock.Verify(s => s.ValidateGame(It.IsAny<Game>()), Times.Once);
         _gameRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Game>()), Times.Once);
     }

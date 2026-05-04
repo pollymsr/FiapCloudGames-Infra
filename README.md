@@ -360,7 +360,7 @@ cd Tech-Challenge-Fiap-Cloud-Games</code></pre>
 
 <p>Vídeo de apresentação do projeto:</p>
 
-<p>👉 <code>https://www.youtube.com/watch?v=jK4k5t0l8l4</code></p>
+<p>👉 <code>https://youtu.be/N9utQcmuFHI</code></p>
 
 <hr>
 

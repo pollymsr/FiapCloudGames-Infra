@@ -88,7 +88,6 @@ public class GameService : IGameService
             PurchaseDate = DateTime.UtcNow
         };
 
-        // Aplicar promoção se código fornecido
         if (!string.IsNullOrWhiteSpace(promotionCode))
         {
             var promotion = await _promotionService.GetByCodeAsync(promotionCode);
@@ -104,7 +103,6 @@ public class GameService : IGameService
                 if (promotion.CurrentUses >= promotion.MaxUses)
                     throw new InvalidOperationException("Esta promoção atingiu o limite de usos.");
 
-                // Atualizar uso da promoção
                 promotion.CurrentUses++;
                 await _promotionService.UpdateAsync(promotion.Id, new UpdatePromotionDto
                 {
